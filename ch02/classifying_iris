@@ -83,7 +83,6 @@ class IrisClassification():
         # store the results in a list of 6 differents series
         accuracy_results = []
 
-        accuracy_results.append([])
         for fi in range(features_nonSetosa.shape[1]):
             feature_i = features_nonSetosa[:, fi]
 
@@ -129,18 +128,31 @@ class IrisClassification():
         acc = test.mean()
         return acc
 
-    def drawAccuracy(self, list):
-
-        global target_names
+    def drawAccuracy(self, accuracy_results):
 
         plt.figure(num=None, figsize=(8, 6))
         plt.clf()
-        mx = range(len(list[0]))
-        for accuracies, color, linestyle in zip(list, COLORS, LINESTYLES):
-            plt.plot(mx, accuracies, linestyle=linestyle, linewidth=0.5, c=color)
-        i = True
-        plt.legend(["iris type =%s" % target_name for target_name in target_names], loc="upper left")
+        test = accuracy_results[0].threshold_accuracy
+        mx = range(len(accuracy_results[0].threshold_accuracy))
+
+        for accuracy_result, color, linestyle in zip(accuracy_results, COLORS, LINESTYLES):
+            array = self.convertToValues(accuracy_result)
+            plt.plot(array[:, 0], array[:, 1],
+                     linestyle=linestyle, linewidth=0.5, c=color)
+
+        plt.legend(["iris type =%s" % accuracy_result.serieName for accuracy_result in accuracy_results],
+                   loc="upper left")
         plt.savefig("testChart")
+
+    def convertToValues(self, accuracy_result):
+        array = np.array([[0, 0]])
+        for i in range(len(accuracy_result.threshold_accuracy)):
+            value = np.array([[accuracy_result.threshold_accuracy[i].threshold,
+                               accuracy_result.threshold_accuracy[i].accuracy]])
+            array = np.append(array, value
+                              , axis=0)
+        array = np.delete(array, 0, 0)
+        return array[array[:, 0].argsort()]
 
 
 if __name__ == "__main__":
