@@ -1,0 +1,147 @@
+from matplotlib import pyplot as plt
+import numpy as np
+from sklearn.datasets import load_iris
+import logging
+from  ch01.utils import DATA_DIR, CHART_DIR, COLORS, LINESTYLES, Result, Threshold_accuracy
+
+data = load_iris()
+
+logging.basicConfig(format=' %(message)s', level=logging.INFO)
+
+
+class IrisClassification():
+    global features, feature_names, target, target_names
+
+    def main(self):
+        self.getData()
+        self.plot1()
+        self.buildFirstClassificationModel()
+
+    def getData(self):
+        global features, feature_names, target, target_names
+        features = data.data
+        feature_names = data.feature_names
+        target = data.target
+        target_names = data.target_names
+
+    def plot1(self):
+        global features, feature_names, target, target_names
+        fig, axes = plt.subplots(2, 3)
+        plt.title("Iris repartition per parameters")
+
+        pairs = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
+
+        # Set up 3 different pairs of (color, marker)
+        color_markers = [
+            ('r', '>'),
+            ('g', 'o'),
+            ('b', 'x'),
+        ]
+        for i, (p0, p1) in enumerate(pairs):
+            ax = axes.flat[i]
+
+            for t in range(3):
+                # Use a different color/marker for each class `t`
+                c, marker = color_markers[t]
+                # limit the features list on indexes that are True on the target List for the value == t
+                # and take the px-th parameter.
+                ax.scatter(features[target == t, p0], features[
+                    target == t, p1], marker=marker, c=c)
+            ax.set_xlabel(feature_names[p0])
+            ax.set_ylabel(feature_names[p1])
+            ax.set_xticks([0, max(features[target == t, p0])])
+            ax.set_yticks([0, max(features[target == t, p1])])
+            # plt.legend(["%s" % target_name for target_name in target_names], loc="upper left")
+
+        fig.tight_layout()
+        fig.savefig('figure1.png')
+
+    def buildFirstClassificationModel(self):
+        global features, feature_names, target, target_names
+        labels = target_names[target]
+        is_setosa = labels == "setosa"
+
+        # get then max petal length of setosa and min petal length of non-setosa
+        plength_setosa = features[is_setosa, 2]
+        plength_non_setosa = features[~is_setosa, 2]
+        maxSetosa = plength_setosa.max()
+        min_nonSetosa = plength_non_setosa.min()
+        logging.info("max plength for setosa :  %f", maxSetosa)
+        logging.info("min plength for non-setosa :  %f", min_nonSetosa)
+
+
+        # select Features & Labels for non Setosa:
+        features_nonSetosa = features[~(labels == "setosa")]
+        labels_nonSetosa = labels[labels != 'setosa']
+        is_virginica = (labels_nonSetosa == "virginica")
+
+
+
+        # loop on all  4 Features for non Setosa  and define which one define at best the
+        best_acc = -1.0
+
+        # store the results in a list of 6 differents series
+        accuracy_results = []
+
+        accuracy_results.append([])
+        for fi in range(features_nonSetosa.shape[1]):
+            feature_i = features_nonSetosa[:, fi]
+
+            result = Result(feature_names[fi])
+            threshold_accuracy = []
+
+            for t in feature_i:
+                pred = feature_i > t
+                acc = (pred == is_virginica).mean()
+                rev_acc = (pred == ~is_virginica).mean()
+
+                if acc > rev_acc:
+                    reverse = False
+                else:
+                    reverse = True
+                    acc = rev_acc
+
+                threshold_accuracy.append(Threshold_accuracy(t, acc))
+
+                if acc > best_acc:
+                    best_acc = acc
+                    best_fi = fi
+                    best_t = t
+                    best_reverse = reverse
+            result.threshold_accuracy = threshold_accuracy
+            accuracy_results.append(result)
+        logging.info("Best feature : %s - Best threshold : %f - Is Reverse : %s - Best Accuracy : %f",
+                     feature_names[fi], best_t,
+                     best_reverse, best_acc)
+
+        self.drawAccuracy(accuracy_results)
+
+        # test the threshold on a sample
+        example = np.array([1.6, 2.5, 4.3, 2.6])
+        self.is_virginica_test(best_fi, best_t, best_reverse, example)
+
+    def is_virginica_test(self, fi, t, reverse, example):
+        'Apply threshold model to a new example'
+        example_fi = example[fi]
+        test = example_fi > t
+        if reverse:
+            test = not test
+        acc = test.mean()
+        return acc
+
+    def drawAccuracy(self, list):
+
+        global target_names
+
+        plt.figure(num=None, figsize=(8, 6))
+        plt.clf()
+        mx = range(len(list[0]))
+        for accuracies, color, linestyle in zip(list, COLORS, LINESTYLES):
+            plt.plot(mx, accuracies, linestyle=linestyle, linewidth=0.5, c=color)
+        i = True
+        plt.legend(["iris type =%s" % target_name for target_name in target_names], loc="upper left")
+        plt.savefig("testChart")
+
+
+if __name__ == "__main__":
+    IrisClassification().main()
