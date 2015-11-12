@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.datasets import load_iris
 import logging
 from  ch01.utils import DATA_DIR, CHART_DIR, COLORS, LINESTYLES, Result, Threshold_accuracy
+from matplotlib.font_manager import FontProperties
 
 data = load_iris()
 
@@ -132,8 +133,8 @@ class IrisClassification():
 
         plt.figure(num=None, figsize=(8, 6))
         plt.clf()
-        test = accuracy_results[0].threshold_accuracy
-        mx = range(len(accuracy_results[0].threshold_accuracy))
+        fontP = FontProperties()
+        fontP.set_size('small')
 
         for accuracy_result, color, linestyle in zip(accuracy_results, COLORS, LINESTYLES):
             array = self.convertToValues(accuracy_result)
@@ -141,8 +142,8 @@ class IrisClassification():
                      linestyle=linestyle, linewidth=0.5, c=color)
 
         plt.legend(["iris type =%s" % accuracy_result.serieName for accuracy_result in accuracy_results],
-                   loc="upper left")
-        plt.savefig("testChart")
+                   prop=fontP)
+        plt.savefig("FirstClassificationChart")
 
     def convertToValues(self, accuracy_result):
         array = np.array([[0, 0]])
