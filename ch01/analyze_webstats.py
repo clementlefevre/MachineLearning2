@@ -68,7 +68,6 @@ class AnalyzeWebStats():
 
     def setXY(self):
         global x, y, xa, xb, ya, yb
-        test = data
         x = data[:, 0]
         y = data[:, 1]
 

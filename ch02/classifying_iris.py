@@ -13,10 +13,14 @@ logging.basicConfig(format=' %(message)s', level=logging.INFO)
 class IrisClassification():
     global features, feature_names, target, target_names
 
+    def __init__(self):
+        self.getData()
+
     def main(self):
         self.getData()
-        self.plot1()
+        self.drawFig1()
         self.buildFirstClassificationModel()
+        self.drawFig2()
 
     def getData(self):
         global features, feature_names, target, target_names
@@ -24,8 +28,9 @@ class IrisClassification():
         feature_names = data.feature_names
         target = data.target
         target_names = data.target_names
+        logging.info("Features : %s", feature_names)
 
-    def plot1(self):
+    def drawFig1(self):
         global features, feature_names, target, target_names
         fig, axes = plt.subplots(2, 3)
         plt.title("Iris repartition per parameters")
@@ -114,7 +119,7 @@ class IrisClassification():
                      feature_names[fi], best_t,
                      best_reverse, best_acc)
 
-        self.drawAccuracy(accuracy_results)
+        self.drawAccuracyComparisionChart(accuracy_results)
 
         # test the threshold on a sample
         example = np.array([1.6, 2.5, 4.3, 2.6])
@@ -129,7 +134,7 @@ class IrisClassification():
         acc = test.mean()
         return acc
 
-    def drawAccuracy(self, accuracy_results):
+    def drawAccuracyComparisionChart(self, accuracy_results):
 
         plt.figure(num=None, figsize=(8, 6))
         plt.clf()
@@ -137,7 +142,7 @@ class IrisClassification():
         fontP.set_size('small')
 
         for accuracy_result, color, linestyle in zip(accuracy_results, COLORS, LINESTYLES):
-            array = self.convertToValues(accuracy_result)
+            array = Threshold_accuracy().convertToValues(accuracy_result)
             plt.plot(array[:, 0], array[:, 1],
                      linestyle=linestyle, linewidth=0.5, c=color)
 
@@ -145,15 +150,64 @@ class IrisClassification():
                    prop=fontP)
         plt.savefig("FirstClassificationChart")
 
-    def convertToValues(self, accuracy_result):
-        array = np.array([[0, 0]])
-        for i in range(len(accuracy_result.threshold_accuracy)):
-            value = np.array([[accuracy_result.threshold_accuracy[i].threshold,
-                               accuracy_result.threshold_accuracy[i].accuracy]])
-            array = np.append(array, value
-                              , axis=0)
-        array = np.delete(array, 0, 0)
-        return array[array[:, 0].argsort()]
+    def drawFig2(self):
+        self.getData()
+        global features, feature_names, target, target_names
+
+        logging.info("Target Names  = %s", target_names)
+
+
+        # define two thresholds
+        t1 = 1.65
+        t2 = 2
+
+        # define the two axis : petal_width (f0) and petal_length(f1)
+        f0, f1 = 3, 2
+
+        area1c = (1., 1, 1)
+        area2c = (.7, .7, .7)
+
+
+        # remove the setosa from features
+        labels = target_names[target]
+        is_setosa = labels == "setosa"
+        is_versicolor = labels == "versicolor"
+        is_virginica = labels == "virginica"
+
+        features_wo_setosa = features[~is_setosa]
+        features_virginica = features[is_virginica]
+        features_versicolor = features[is_versicolor]
+
+        # define the axis with 10% margin
+        x0 = features_wo_setosa[:, f0].min() * 0.9
+        x1 = features_wo_setosa[:, f0].max() * 1.1
+
+        y0 = features_wo_setosa[:, f1].min() * 0.9
+        y1 = features_wo_setosa[:, f1].max() * 1.1
+
+        fig, ax = plt.subplots()
+
+        # draw the two thresholds lines :
+        ax.fill_between([t1, x1], [y0, y0], [y1, y1], color=area1c)
+        ax.fill_between([x0, t1], [y0, y0], [y1, y1], color=area2c)
+
+        # draw the two t1 and t2 lines
+        ax.plot([t1, t1], [y0, y1], 'k--', lw=2)
+        ax.plot([t2, t2], [y0, y1], 'k:', lw=2)
+
+        # scatter the two series versicolor and virginica
+        ax.scatter(features_virginica[:, f0], features_virginica[:, f1], c='b', marker='o', s=40, label="virginica")
+        ax.scatter(features_versicolor[:, f0], features_versicolor[:, f1], c='r', marker='x', s=40, label="versicolor")
+
+        ax.set_ylim(y0, y1)
+        ax.set_xlim(x0, x1)
+        ax.set_xlabel(feature_names[f0])
+        ax.set_ylabel(feature_names[f1])
+        ax.legend(loc='upper left')
+
+        fig.tight_layout()
+
+        fig.savefig('figure2.png')
 
 
 if __name__ == "__main__":
