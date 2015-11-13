@@ -64,7 +64,7 @@ def getModel(features, labels, feature_names):
 def predict(model, features):
     accuracy_results, best_fi, best_t, best_reverse = model
 
-    if best_reverse == True:
+    if best_reverse == False:
         return features[:, best_fi] > best_t
     else:
         return features[:, best_fi] < best_t

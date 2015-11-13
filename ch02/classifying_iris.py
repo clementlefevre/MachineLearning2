@@ -3,7 +3,7 @@ import numpy as np
 import os
 from sklearn.datasets import load_iris
 import logging
-from  utils import CHART_DIR, COLORS, LINESTYLES, Result, Threshold_accuracy, getModel
+from  utils import CHART_DIR, COLORS, LINESTYLES, Result, Threshold_accuracy, getModel, accuracy, predict
 from matplotlib.font_manager import FontProperties
 
 data = load_iris()
@@ -18,11 +18,11 @@ class IrisClassification():
         self.getData()
 
     def main(self):
-        self.getData()
+
         self.drawFig1()
         self.buildFirstClassificationModel()
         self.drawFig2()
-        self.train_test()
+        self.train_test_50()
 
     def getData(self):
         global features, feature_names, target, target_names
@@ -174,7 +174,7 @@ class IrisClassification():
 
         fig.savefig(os.path.join(CHART_DIR, 'figure2.png'))
 
-    def train_test(self):
+    def train_test_50(self):
         global features, feature_names, target, target_names
 
         labels = target_names[target]
@@ -184,18 +184,19 @@ class IrisClassification():
 
         labels_wo_setosa = labels[~is_setosa]
 
-        is_virginica = labels_wo_setosa == "virginica"
+        is_virginica = (labels_wo_setosa == "virginica")
 
         # split the features in train and test
-        features_training = features_wo_setosa[:len(features_wo_setosa) / 2]
-        features_testing = features_wo_setosa[len(features_wo_setosa) / 2:]
+        training = np.tile([True, False], 50)
+        testing = ~training
 
 
         # display the resulting accuracy for both series
-        accuracy_training = getModel(features_training, labels_training, feature_names)
-        accuracy_testing = getModel(features_testing, labels_testing, feature_names)
+        model_training = getModel(features_wo_setosa[training], is_virginica[training], feature_names)
 
-        logging.info("Training Accuracy = %f   --- Testing Accuracy = %f", accuracy_training, accuracy_testing)
+        accuracy_testing = accuracy(model_training, features_wo_setosa[testing], is_virginica[testing])
+
+        logging.info("Testing Accuracy = %f", accuracy_testing)
 
 
 if __name__ == "__main__":
