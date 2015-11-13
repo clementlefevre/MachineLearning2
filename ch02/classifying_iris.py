@@ -187,16 +187,17 @@ class IrisClassification():
         is_virginica = (labels_wo_setosa == "virginica")
 
         # split the features in train and test
-        training = np.tile([True, False], 50)
+        training = np.tile([False, True], 50)
         testing = ~training
 
 
         # display the resulting accuracy for both series
         model_training = getModel(features_wo_setosa[training], is_virginica[training], feature_names)
 
+        accuracy_training = accuracy(model_training, features_wo_setosa[training], is_virginica[training])
         accuracy_testing = accuracy(model_training, features_wo_setosa[testing], is_virginica[testing])
 
-        logging.info("Testing Accuracy = %f", accuracy_testing)
+        logging.info("Training Accuracy : %f   ----Testing Accuracy = %f  ", accuracy_training, accuracy_testing)
 
 
 if __name__ == "__main__":
