@@ -1,8 +1,9 @@
 from matplotlib import pyplot as plt
 import numpy as np
+import os
 from sklearn.datasets import load_iris
 import logging
-from  ch01.utils import DATA_DIR, CHART_DIR, COLORS, LINESTYLES, Result, Threshold_accuracy
+from  utils import CHART_DIR, COLORS, LINESTYLES, Result, Threshold_accuracy, getModel
 from matplotlib.font_manager import FontProperties
 
 data = load_iris()
@@ -21,6 +22,7 @@ class IrisClassification():
         self.drawFig1()
         self.buildFirstClassificationModel()
         self.drawFig2()
+        self.train_test()
 
     def getData(self):
         global features, feature_names, target, target_names
@@ -60,7 +62,7 @@ class IrisClassification():
             # plt.legend(["%s" % target_name for target_name in target_names], loc="upper left")
 
         fig.tight_layout()
-        fig.savefig('figure1.png')
+        fig.savefig(os.path.join(CHART_DIR, 'figure1.png'))
 
     def buildFirstClassificationModel(self):
         global features, feature_names, target, target_names
@@ -81,43 +83,7 @@ class IrisClassification():
         labels_nonSetosa = labels[labels != 'setosa']
         is_virginica = (labels_nonSetosa == "virginica")
 
-
-
-        # loop on all  4 Features for non Setosa  and define which one define at best the
-        best_acc = -1.0
-
-        # store the results in a list of 6 differents series
-        accuracy_results = []
-
-        for fi in range(features_nonSetosa.shape[1]):
-            feature_i = features_nonSetosa[:, fi]
-
-            result = Result(feature_names[fi])
-            threshold_accuracy = []
-
-            for t in feature_i:
-                pred = feature_i > t
-                acc = (pred == is_virginica).mean()
-                rev_acc = (pred == ~is_virginica).mean()
-
-                if acc > rev_acc:
-                    reverse = False
-                else:
-                    reverse = True
-                    acc = rev_acc
-
-                threshold_accuracy.append(Threshold_accuracy(t, acc))
-
-                if acc > best_acc:
-                    best_acc = acc
-                    best_fi = fi
-                    best_t = t
-                    best_reverse = reverse
-            result.threshold_accuracy = threshold_accuracy
-            accuracy_results.append(result)
-        logging.info("Best feature : %s - Best threshold : %f - Is Reverse : %s - Best Accuracy : %f",
-                     feature_names[fi], best_t,
-                     best_reverse, best_acc)
+        accuracy_results, best_fi, best_t, best_reverse = getModel(features_nonSetosa, is_virginica, feature_names)
 
         self.drawAccuracyComparisionChart(accuracy_results)
 
@@ -148,10 +114,9 @@ class IrisClassification():
 
         plt.legend(["iris type =%s" % accuracy_result.serieName for accuracy_result in accuracy_results],
                    prop=fontP)
-        plt.savefig("FirstClassificationChart")
+        plt.savefig(os.path.join(CHART_DIR, "FirstClassificationChart"))
 
     def drawFig2(self):
-        self.getData()
         global features, feature_names, target, target_names
 
         logging.info("Target Names  = %s", target_names)
@@ -207,7 +172,30 @@ class IrisClassification():
 
         fig.tight_layout()
 
-        fig.savefig('figure2.png')
+        fig.savefig(os.path.join(CHART_DIR, 'figure2.png'))
+
+    def train_test(self):
+        global features, feature_names, target, target_names
+
+        labels = target_names[target]
+        is_setosa = labels == "setosa"
+
+        features_wo_setosa = features[~is_setosa]
+
+        labels_wo_setosa = labels[~is_setosa]
+
+        is_virginica = labels_wo_setosa == "virginica"
+
+        # split the features in train and test
+        features_training = features_wo_setosa[:len(features_wo_setosa) / 2]
+        features_testing = features_wo_setosa[len(features_wo_setosa) / 2:]
+
+
+        # display the resulting accuracy for both series
+        accuracy_training = getModel(features_training, labels_training, feature_names)
+        accuracy_testing = getModel(features_testing, labels_testing, feature_names)
+
+        logging.info("Training Accuracy = %f   --- Testing Accuracy = %f", accuracy_training, accuracy_testing)
 
 
 if __name__ == "__main__":
