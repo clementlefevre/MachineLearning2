@@ -23,6 +23,7 @@ class IrisClassification():
         self.buildFirstClassificationModel()
         self.drawFig2()
         self.train_test_50()
+        self.cross_validation()
 
     def getData(self):
         global features, feature_names, target, target_names
@@ -190,7 +191,6 @@ class IrisClassification():
         training = np.tile([False, True], 50)
         testing = ~training
 
-
         # display the resulting accuracy for both series
         model_training = getModel(features_wo_setosa[training], is_virginica[training], feature_names)
 
@@ -198,6 +198,31 @@ class IrisClassification():
         accuracy_testing = accuracy(model_training, features_wo_setosa[testing], is_virginica[testing])
 
         logging.info("Training Accuracy : %f   ----Testing Accuracy = %f  ", accuracy_training, accuracy_testing)
+
+    def cross_validation(self):
+
+        global features, feature_names, target, target_names
+        is_setosa = target_names[target] == "setosa"
+        features_wo_setosa = features[~is_setosa]
+
+        labels_wo_setosa = target_names[target][~is_setosa]
+
+        is_virginica = labels_wo_setosa == "virginica"
+
+        # set a vector of all but one True of the size of features_wo_setosa
+
+
+        correct = 0.0
+        for ei in range(len(features_wo_setosa)):
+            train = np.ones(len(features_wo_setosa), bool)
+            train[ei] = False
+            testing = ~train
+            if ei == 99:
+                i = True
+            model = getModel(features_wo_setosa[train], is_virginica[train], feature_names)
+            correct += np.sum(predict(model, features_wo_setosa[testing]) == is_virginica[testing])
+        acc = correct / float(len(features_wo_setosa))
+        logging.info("Accuracy on cross-validation : %f", acc)
 
 
 if __name__ == "__main__":
