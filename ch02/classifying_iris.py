@@ -26,6 +26,7 @@ class IrisClassification():
         self.train_test_50()
         start = time()
         self.cross_validation()
+        self.kFold()
 
         logging.info("time to croass validation  : %s", time() - start)
 
@@ -225,6 +226,35 @@ class IrisClassification():
             correct += np.sum(predict(model, features_wo_setosa[testing]) == is_virginica[testing])
         acc = correct / float(len(features_wo_setosa))
         logging.info("Accuracy on cross-validation : %f", acc)
+
+    def kFold(self):
+        global features, feature_names, target, target_names
+
+        from sklearn.neighbors import KNeighborsClassifier
+
+        from sklearn.neighbors import RadiusNeighborsClassifier
+
+        from sklearn.cross_validation import KFold
+
+        labels = target_names[target]
+        means = []
+
+        kf = KFold(len(features), n_folds=5, shuffle=True)
+
+        classifier_knn = KNeighborsClassifier(n_neighbors=5)
+        classifier_radius = RadiusNeighborsClassifier(2.0)
+
+        self.getMeanAccuracy(classifier_knn, features, kf, labels)
+        self.getMeanAccuracy(classifier_radius, features, kf, labels)
+
+    def getMeanAccuracy(self, classifier, features, kf, labels):
+        means = []
+        for training, testing in kf:
+            classifier.fit(features[training], labels[training])
+            prediction = classifier.predict(features[testing])
+            curmean = np.mean(prediction == labels[testing])
+            means.append(curmean)
+        logging.info("Mean accuracy = %f %%", np.mean(means))
 
 
 if __name__ == "__main__":
