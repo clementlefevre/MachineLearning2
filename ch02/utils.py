@@ -57,8 +57,8 @@ def getModel(features, labels, feature_names):
         result.threshold_accuracy = threshold_accuracy
         accuracy_results.append(result)
 
-    logging.info("best accuracy : %f   for threshold = %f on feature Index : %i, using reverse :%s", best_acc, best_t,
-                 best_fi, best_reverse)
+    # logging.info("best accuracy : %f   for threshold = %f on feature Index : %i, using reverse :%s", best_acc, best_t,
+    #              best_fi, best_reverse)
 
     return accuracy_results, best_fi, best_t, best_reverse
 

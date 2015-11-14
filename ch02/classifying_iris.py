@@ -5,6 +5,7 @@ from sklearn.datasets import load_iris
 import logging
 from  utils import CHART_DIR, COLORS, LINESTYLES, Result, Threshold_accuracy, getModel, accuracy, predict
 from matplotlib.font_manager import FontProperties
+from  time import time
 
 data = load_iris()
 
@@ -23,7 +24,10 @@ class IrisClassification():
         self.buildFirstClassificationModel()
         self.drawFig2()
         self.train_test_50()
+        start = time()
         self.cross_validation()
+
+        logging.info("time to croass validation  : %s", time() - start)
 
     def getData(self):
         global features, feature_names, target, target_names
@@ -217,8 +221,6 @@ class IrisClassification():
             train = np.ones(len(features_wo_setosa), bool)
             train[ei] = False
             testing = ~train
-            if ei == 99:
-                i = True
             model = getModel(features_wo_setosa[train], is_virginica[train], feature_names)
             correct += np.sum(predict(model, features_wo_setosa[testing]) == is_virginica[testing])
         acc = correct / float(len(features_wo_setosa))
