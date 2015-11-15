@@ -3,6 +3,7 @@ __author__ = 'JW'
 import utils
 import load
 import logging
+import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import cross_validation
 
@@ -28,10 +29,16 @@ class SeedsClassification():
     	global features,labels 
     	classifier = KNeighborsClassifier(n_neighbors=1)
     	kFold = cross_validation.KFold(len(features), n_folds = 5, shuffle = True)
+    	accuracy = 0.0
+    	globalaccuracy=0.0
 
     	for training,testing in kFold:
     		model = classifier.fit(features[training], labels[training])
     		prediction = classifier.predict(features[testing])
-    		print ("testing : {0} \n Prediction : {1}".format(features[testing], prediction))
+    		accuracy = np.mean(prediction==labels[testing])
+    		globalaccuracy+=accuracy
+    		print("accuracy {0:.1%}").format(accuracy)
+    	print("globalaccuracy {0:.1%}").format(globalaccuracy/5)
+    	
 if __name__ == '__main__':
 	SeedsClassification().main()
