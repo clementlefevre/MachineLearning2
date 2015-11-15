@@ -237,9 +237,8 @@ class IrisClassification():
         from sklearn.cross_validation import KFold
 
         labels = target_names[target]
-        means = []
 
-        kf = KFold(len(features), n_folds=5, shuffle=True)
+        kf = KFold(len(features), n_folds=2, shuffle=True)
 
         classifier_knn = KNeighborsClassifier(n_neighbors=5)
         classifier_radius = RadiusNeighborsClassifier(2.0)
