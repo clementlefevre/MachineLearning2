@@ -1,7 +1,7 @@
 import numpy as np
-import scipy as sp
+from  utils import CHART_DIR
+import os
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn import cross_validation
 import load
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
@@ -19,12 +19,9 @@ feature_names = [
 data = load.load_dataset("seeds")
 # np.set_printoptions(threshold=np.nan)
 
-def drawFigure_no_normalization(features, labels, neighbors=1, parameters=[]):
-    print("Labels before ramaiougana : {0} :").format(labels)
+def drawFigure(features, labels, neighbors=1, parameters=[], figName="no_name"):
     names = sorted(set(labels))
     labels = np.array([names.index(ell) for ell in labels])
-
-    print("Labels after ramaiougana : {0} :").format(labels)
 
     idX, idY = parameters[0], parameters[1]
 
@@ -40,8 +37,6 @@ def drawFigure_no_normalization(features, labels, neighbors=1, parameters=[]):
 
     featuresMesh = convertLinspaceToFeatures(X, Y)
 
-    
-
     X, Y = np.meshgrid(X, Y)
 
     Xravel = X.ravel()
@@ -49,30 +44,25 @@ def drawFigure_no_normalization(features, labels, neighbors=1, parameters=[]):
 
     vStacked = np.vstack([Xravel, Yravel])
 
-    print "vStacked"
-    print vStacked
-
     vStackedTransposed = vStacked.T
-    print "vStackedTransposed"
-    print vStackedTransposed
 
     # create a predicate resulting of a model
     classifier = KNeighborsClassifier(n_neighbors=neighbors)
     classifier.fit(features[:, (idX, idY)], labels)
 
-    prediction = classifier.predict(vStackedTransposed)
-    prediction = classifier.predict(featuresMesh)
+    predictionT = classifier.predict(vStackedTransposed)
+    predictionManual = classifier.predict(featuresMesh)
 
-    print "prediction before reshape :\n"
-    print prediction
+    CT = predictionT.reshape(X.shape)
+    CManual = predictionManual.reshape(X.shape)
 
-    C = prediction.reshape(X.shape)
-    print"predict reshaped :\n \n"
-    print C
+    drawChart(CT, X, Y, x0, x1, y0, y1, figName + "_T")
+    drawChart(CManual, X, Y, x0, x1, y0, y1, figName + "_Manual")
 
+
+def drawChart(C, X, Y, x0, x1, y0, y1, figName):
     # create a ListedColormap
     cmap = ListedColormap(["r", "g", "b"])
-
     # plot the prediction area using pcolormesh
     fig, ax = plt.subplots()
     ax.set_xlim(x0, x1)
@@ -80,18 +70,14 @@ def drawFigure_no_normalization(features, labels, neighbors=1, parameters=[]):
     ax.set_xlabel(feature_names[0])
     ax.set_ylabel(feature_names[2])
     ax.pcolormesh(X, Y, C, cmap=cmap)
-
     # iter on the three type of seeds and scatter them.
-
     fig.tight_layout()
-    fig.savefig('figure4sklearn.png')
+    fig.savefig(os.path.join(CHART_DIR, figName + ".png"))
 
 
 def convertLinspaceToFeatures(linspaceX, linespaceY):
     matrix = []
-    for x in range(len(linspaceX)):
-        print x
-        for y in range(len(linespaceY)):
-            print y
+    for y in range(len(linespaceY)):
+        for x in range(len(linspaceX)):
             matrix.append([linspaceX[x], linespaceY[y]])
     return np.asarray(matrix)
