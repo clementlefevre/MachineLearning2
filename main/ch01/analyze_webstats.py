@@ -4,7 +4,7 @@ import logging
 import scipy as sp
 import matplotlib.pyplot as plt
 
-from ch01.utils import DATA_DIR, CHART_DIR
+from main.ch01.utils import DATA_DIR, CHART_DIR
 
 logging.basicConfig(format=' %(message)s', level=logging.INFO)
 

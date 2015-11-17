@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.datasets import load_iris
 from matplotlib.font_manager import FontProperties
 
-from  ch02 import CHART_DIR, COLORS, LINESTYLES, Threshold_accuracy, getModel, accuracy, predict
+from  main.ch02.utils import CHART_DIR, COLORS, LINESTYLES, Threshold_accuracy, getModel, accuracy, predict
 
 data = load_iris()
 

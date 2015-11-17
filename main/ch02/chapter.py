@@ -94,7 +94,7 @@ def is_virginica_test(fi, t, reverse, example):
     return test
 
 
-from ch02 import fit_model, predict
+from main.ch02.utils import getModel, predict
 
 # ning accuracy was 96.0%.
 # ing accuracy was 90.0% (N = 50).
@@ -105,7 +105,7 @@ for ei in range(len(features)):
     training = np.ones(len(features), bool)
     training[ei] = False
     testing = ~training
-    model = fit_model(features[training], is_virginica[training])
+    model = getModel(features[training], is_virginica[training])
     predict(model, features[testing])
     predictions = predict(model, features[testing])
     correct += np.sum(predictions == is_virginica[testing])
@@ -117,7 +117,7 @@ print('Accuracy: {0:.1%}'.format(acc))
 ############## SEEDS DATASET ##############
 ###########################################
 
-from ch02 import load_dataset
+from main.ch02.load import load_dataset
 
 feature_names = [
     'area',

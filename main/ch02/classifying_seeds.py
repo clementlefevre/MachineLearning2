@@ -4,11 +4,10 @@ import logging
 
 import numpy as np
 import scipy as sp
-
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import cross_validation
 
-from ch02 import plotChart, load
+from main.ch02 import plotChart, load
 
 logging.basicConfig(format=' %(message)s', level=logging.INFO)
 global features, labels

@@ -1,5 +1,7 @@
 __author__ = 'JW'
 
+from main.ch02 import utils
+
 from sklearn.feature_extraction.text import CountVectorizer
 
 

@@ -14,7 +14,7 @@ __author__ = 'JW'
 import numpy as np
 from sklearn.datasets import load_iris
 
-from ch02 import fit_model, accuracy
+from main.ch02.utils import getModel, accuracy
 
 data = load_iris()
 features = data['data']
@@ -35,7 +35,7 @@ testing = np.tile([True, False], 50)  # testing = [True,False,True,False,True,Fa
 # will be used for training
 training = ~testing
 
-model = fit_model(features[training], is_virginica[training])
+model = getModel(features[training], is_virginica[training])
 train_accuracy = accuracy(features[training], is_virginica[training], model)
 test_accuracy = accuracy(features[testing], is_virginica[testing], model)
 

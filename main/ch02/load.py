@@ -3,7 +3,7 @@ import logging
 
 import scipy as sp
 
-from ch02 import utils
+from main.ch02 import utils
 
 logging.basicConfig(format=' %(message)s', level=logging.INFO)
 

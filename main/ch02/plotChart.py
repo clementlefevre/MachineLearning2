@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 
 from matplotlib.colors import ListedColormap
 
-from  ch02 import CHART_DIR
+from  main.ch02.utils import CHART_DIR
 import load
 
 feature_names = [
