@@ -1,13 +1,14 @@
 __author__ = 'JW'
 
-import utils
-import load
 import logging
+
 import numpy as np
 import scipy as sp
+
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import cross_validation
-import plotChart
+
+from ch02 import plotChart, load
 
 logging.basicConfig(format=' %(message)s', level=logging.INFO)
 global features, labels

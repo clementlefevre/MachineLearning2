@@ -1,11 +1,13 @@
+import os
+import logging
+from  time import time
+
 from matplotlib import pyplot as plt
 import numpy as np
-import os
 from sklearn.datasets import load_iris
-import logging
-from  utils import CHART_DIR, COLORS, LINESTYLES, Result, Threshold_accuracy, getModel, accuracy, predict
 from matplotlib.font_manager import FontProperties
-from  time import time
+
+from  ch02 import CHART_DIR, COLORS, LINESTYLES, Threshold_accuracy, getModel, accuracy, predict
 
 data = load_iris()
 

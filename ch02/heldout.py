@@ -13,7 +13,8 @@ __author__ = 'JW'
 
 import numpy as np
 from sklearn.datasets import load_iris
-from threshold import fit_model, accuracy
+
+from ch02 import fit_model, accuracy
 
 data = load_iris()
 features = data['data']

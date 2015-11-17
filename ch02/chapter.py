@@ -94,7 +94,7 @@ def is_virginica_test(fi, t, reverse, example):
     return test
 
 
-from threshold import fit_model, predict
+from ch02 import fit_model, predict
 
 # ning accuracy was 96.0%.
 # ing accuracy was 90.0% (N = 50).
@@ -117,7 +117,7 @@ print('Accuracy: {0:.1%}'.format(acc))
 ############## SEEDS DATASET ##############
 ###########################################
 
-from load import load_dataset
+from ch02 import load_dataset
 
 feature_names = [
     'area',

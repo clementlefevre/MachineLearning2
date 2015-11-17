@@ -1,10 +1,13 @@
-import numpy as np
-from  utils import CHART_DIR
 import os
+
+import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
-import load
 from matplotlib import pyplot as plt
+
 from matplotlib.colors import ListedColormap
+
+from  ch02 import CHART_DIR
+import load
 
 feature_names = [
     'area',

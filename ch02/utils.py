@@ -5,6 +5,8 @@
 #
 # It is made available under the MIT License
 
+__package__ = __name__
+
 import os
 import numpy as np
 import logging
