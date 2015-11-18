@@ -1,12 +1,14 @@
-__author__ = 'JW'
-
+from main import tools
+from sklearn.feature_extraction.text import CountVectorizer
 import nltk.stem
 import scipy as sp
 import os
-from main import tools
-from sklearn.feature_extraction.text import CountVectorizer
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data/toy")
+
+posts = [open(os.path.join(DATA_DIR, f)).read() for f in
+         os.listdir(DATA_DIR)]
+new_post = "imaging databases"
 
 
 class Clustering():
@@ -23,24 +25,34 @@ class Clustering():
         print (X.toarray().transpose())
 
     def analyze_posts(self):
-        posts = [open(os.path.join(DATA_DIR, f)).read() for f in
-                 os.listdir(DATA_DIR)]
-        vectorizer = CountVectorizer(min_df=1)
+
+        vectorizerCount = CountVectorizer(min_df=1)
+        self.searchNearestPost(vectorizerCount, "CountVectorizer", False)
+        self.searchNearestPost(vectorizerCount, "CountVectorizer", True)
+
+    def getEuclidianDistances(self, training, testing, normalized=False):
+        if normalized:
+            training = training.toarray()/sp.linalg.norm(training.toarray())
+            testing  = testing.toarray()/sp.linalg.norm(testing.toarray())
+            delta = training - testing
+        else:
+             delta = (training - testing).toarray()
+        distance = sp.linalg.norm(delta)
+        return distance
+
+    def searchNearestPost(self, vectorizer, vectorizedMethod, normalized=False):
         X_train = vectorizer.fit_transform(posts)
+        X_testing = vectorizer.transform([new_post])
+        best_distance = 100
+        bestPostIdx = 0
 
-        new_post = "imaging databases"
-        new_postVector = vectorizer.transform([new_post])
-
-        self.getEuclidianDistances(X_train, new_postVector)
-
-    def getEuclidianDistances(self, training, testing):
-        for i in range(0, 5):
-            trainingVector = training.getrow(i)
-            testingVector = testing
-            delta = trainingVector - testingVector
-
-            distance = sp.linalg.norm(delta.toarray())
-            print distance
+        for i in range(X_train.shape[0]):
+            distance = self.getEuclidianDistances(X_train.getrow(i), X_testing, normalized)
+            if distance<best_distance:
+                best_distance = distance
+                bestPostIdx= i
+            print "Distance : {1} : {0} - ".format(posts[i],distance)
+        print "With method {1} {2} -> Closest Post : {0}".format(posts[bestPostIdx],vectorizedMethod, normalized)
 
 
 if __name__ == "__main__":
