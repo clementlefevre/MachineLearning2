@@ -14,6 +14,8 @@ import scipy as sp
 from scipy.stats import norm
 from matplotlib import pylab
 from sklearn.cluster import KMeans
+import pdb
+import numpy as np
 
 CHART_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), "charts")
@@ -56,7 +58,7 @@ yw3 = norm(loc=0.8, scale=.15).rvs(20)
 x = sp.append(sp.append(xw1, xw2), xw3)
 y = sp.append(sp.append(yw1, yw2), yw3)
 
-print x
+
 
 i = 1
 plot_clustering(x, y, "Vectors")
@@ -69,12 +71,19 @@ i += 1
 
 mx, my = sp.meshgrid(sp.arange(0, 1, 0.001), sp.arange(0, 1, 0.001))
 
+
+
 km = KMeans(init='random', n_clusters=num_clusters, verbose=1,
             n_init=1, max_iter=1,
             random_state=seed)
-km.fit(sp.array(list(zip(x, y))))
+training = np.array(list(zip(x, y)))
+km.fit(training)
 
-Z = km.predict(sp.c_[mx.ravel(), my.ravel()]).reshape(mx.shape)
+
+testing = sp.c_[mx.ravel(), my.ravel()]
+pdb.set_trace()
+
+Z = km.predict(testing).reshape(mx.shape)
 
 plot_clustering(x, y, "Clustering iteration 1", km=km)
 pylab.imshow(Z, interpolation='nearest',
