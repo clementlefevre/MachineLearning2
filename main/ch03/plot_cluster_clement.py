@@ -31,37 +31,44 @@ num_clusters = 3
 seed = 2
 
 
-rangero = np.arange(0,1,0.001)
+#define the scope
+rangeScope = np.arange(0,1,0.001)
 
+Xscope,Yscope = np.meshgrid(rangeScope)
+
+#create random dataset of 2 vectors, one for each word
+xDataset,yDataset = self.createNormalizedDataSets()
 
 
 class Plotter():
     
     def main(self):
-        #define a set of random dataset
-        x, y = self.createNormalizedDataSets()
 
+        #plot the vectors
+        self.plot_chart("Vectors")
+        print "vectors plotted"
+
+
+        
         km = KMeans(init='random', n_clusters=num_clusters, verbose=1,
             n_init=1, max_iter=1,
             random_state=seed)
         training = np.array(list(zip(x, y)))
         km.fit(training)
         
-        #define a meshgrid from -1 to 1
-        X,Y = self.createMeshGrid()
+        
         
         testing = self.convertMeshGrid(X,Y)
 
         #create a prediction model from dataset
-        model = self.createPredictionModel(x,y , km,testing, X)
+        model = self.createPredictionModel(x,y , km,testing)
 
 
-        #plot the data
-        self.plot_chart(dataset, "Vectors")
 
-        self.plot_chart(dataset, "Prediction",testing)
+        self.plot_chart(x, y, "Prediction",model)
+        print "With Prediction Mesh plotted"
 
-
+ 
 
     def createNormalizedDataSets(self):
         xw1 = norm(loc=0.3, scale=.15).rvs(20)
@@ -78,10 +85,6 @@ class Plotter():
 
         return x,y
 
-    def createMeshGrid(self):
-        X,Y =   np.meshgrid(rangero,rangero)
-        
-        return X,Y
 
     def convertMeshGrid(self, X,Y):
         vstack = np.vstack([X.ravel(),Y.ravel()])
@@ -89,31 +92,24 @@ class Plotter():
         return transposed
 
     def createPredictionModel(self, x,y ,km,testing, X):
-      
-             
        Z = km.predict(testing)
+       return  Z.reshape(X.shape)
 
-  
-       CT = Z.reshape(X.shape)
-
-
-    def plot_chart(self,dataset,title,C=None):
-
-        
-
-
+    def plot_chart(self,title,C=None, X=None, Y=None):
         plt.figure(num=None, figsize=(8, 6))
         plt.clf()
-        plt.scatter(dataset[:,0], dataset[:,1], s=3, color='b')
+        
+        if C !=None:
+            pdb.set_trace()
+            plt.pcolormesh(X, Y, C, cmap=plt.cm.Blues)
+        plt.scatter(xDataset, yDataset, s=3, color='r')
         plt.title(title)
         plt.xlabel("word1")
         plt.ylabel("word2")
         plt.autoscale(tight=True)
         plt.grid(True, linestyle='-', color='0.75')
-        if C:
-            plt.pcolormesh(X, Y, C, cmap=plot.cm.Blues)
-        plt.savefig(os.path.join(CHART_DIR, title))
 
+        plt.savefig(os.path.join(CHART_DIR, title))
 
 
         

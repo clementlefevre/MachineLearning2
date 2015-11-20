@@ -81,9 +81,10 @@ km.fit(training)
 
 
 testing = sp.c_[mx.ravel(), my.ravel()]
-pdb.set_trace()
+
 
 Z = km.predict(testing).reshape(mx.shape)
+pdb.set_trace()
 
 plot_clustering(x, y, "Clustering iteration 1", km=km)
 pylab.imshow(Z, interpolation='nearest',
