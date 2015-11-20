@@ -1,6 +1,6 @@
 
 from scipy.stats import norm
-import matplotlib.pylab
+
 import matplotlib.pyplot as plt
 import os
 import numpy as np
@@ -72,12 +72,12 @@ class Plotter():
             prediction,centers  = self.predictKMeans(i)
             predictionReshaped = prediction.reshape(Xscope.shape)
             self.plot_chart("Iteration_"+str(i), predictionReshaped, centers)
-       
-
+    
     def predictKMeans(self, iteration):
         km =  KMeans(init="random", n_clusters = num_clusters, verbose=1, \
             n_init=1,max_iter=iteration,random_state=seed)
         km.fit(training)
+
         return km.predict(testing), km.cluster_centers_
 
 
@@ -88,13 +88,16 @@ class Plotter():
         if C !=None:
             plt.pcolormesh(Xscope, Yscope, C, cmap=plt.cm.Blues)
             for i in range(len(centers)):
-                plt.scatter(centers[i][0],centers[i][1],s=10, color='g')
+                plt.scatter(centers[i][0],centers[i][1],s=10, marker='x', linewidth=2,color='g')
 
 
         plt.scatter(xDataset, yDataset, s=3, color='r')
         plt.title(title)
         plt.xlabel("word1")
         plt.ylabel("word2")
+        plt.xlim()
+        plt.xlim(Xscope.min(),Xscope.max())
+        plt.ylim(Yscope.min(), Yscope.max())
         plt.autoscale(tight=True)
         plt.grid(True, linestyle='-', color='0.75')
         plt.savefig(os.path.join(CHART_DIR, title))
