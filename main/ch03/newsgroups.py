@@ -1,7 +1,9 @@
 import sklearn.datasets
 from sklearn.feature_extraction.text import TfidfVectorizer
-from main.ch03.clustering import StemmedCountVectorizer
 import pdb
+import scipy as sp
+import numpy as np
+import main.ch03.clustering
 
 groups = ['comp.graphics', 'comp.os.ms-windows.misc',
 'comp.sys.ibm.pc.hardware', 'comp.sys.mac.hardware',
@@ -9,10 +11,51 @@ groups = ['comp.graphics', 'comp.os.ms-windows.misc',
 
 training_data = sklearn.datasets.fetch_20newsgroups(subset="train",categories=groups)
 
-testing__data = sklearn.datasets.fetch_20newsgroups(subset="test", categories=groups) 
+testing_data = sklearn.datasets.fetch_20newsgroups(subset="test", categories=groups) 
 
-vectorizer = StemmedCountVectorizer()
+class StemmedTfidfVectorizer(TfidfVectorizer):
 
-#SHA256:pq9i0piduacfT+i88dANq6LzvQK1JmEV5yCy32MZqfg clement.san@gmail.com
+    def build_analyzer(self):
+        analyzer = super(StemmedTfidfVectorizer, self).build_analyzer()
+        return lambda doc: (main.ch03.clustering.english_stemmer.stem(w) for w in analyzer(doc))
 
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC47AtA6+A4SvXE6FwTU5jvuUQdsv/OkZqa//ZpmoXrc3i2NPee7WACOqKpCgU6vYwlE1IPfwzl3DB6+xMuC3AzUmBCY/HjruaYiY7K44NNvasckqnNaqqVmKEMbAsFLi6sSPqij5sRf4hGxJcL//2YE5QBQxitVSe7AIPMcpnCf7KuCSQZ6kQHUU6zhBS/rZOJBzy/1R+yLlvNvgE8GX0qGtq7waGT4Z1R7o4rGzN6lQTJegUb4P5+JlNW4yCXD1m5lQ+WYmdSkpivThxz5pyxhjl+DNd3snzM3xHcqfou7OiYu9emlnIV/7qrVD2FC52yz/gEyl7FkLxJk6ynBL++LiVsJ6dAq1qGOOzZCNPBDqzoyav5SII3dqwmv1C7NVgqtiDuRwPYBd2LZGvz+go+uwr3JP2cIKTRa8az4br6d87Ev8zF/okKFWI7YWvzZM3Sjz6Ycm9EE9fmSnmU91/y18BkqMgY7MbHRnNzZfTOcXycpMl95X8lWLNyinp1IM1qKgKxFZbCAwq6DhLsjBdO7s3+xUHkBpRODz0xMBt0XFYlAXF/D6a6c+vBjJ+xqfqZA4cg9b+XKu7L0jbDMNJ4m1WNBzoh6CY3Jdh877uLUXUm0tM5u57nf4Zc5UgEA3YZAohBjQgyJJUUT2XGax4HFW+gqg97oL9SkqmkV81xuw== clement.san@gmail.com
+vectorizer = StemmedTfidfVectorizer(min_df=1,stop_words="english", decode_error='ignore')
+
+class NewsGroups():
+    def main(self):
+        print (training_data.target_names)
+        self.searchNearestPost(vectorizer, "StemmedTfidf", True)
+
+    def searchNearestPost(self, vectorizer, methodName, normalized=True):
+        pdb.set_trace()
+        trainingVector = vectorizer.fit_transform(training_data)
+        testingVector = vectorizer.transform(testing_data)
+
+        #let is iterate on all training Vectors and compute the distance with one test post:
+        bestDistance = 100
+        bestPostIdx = -1
+
+       
+        for i in range(trainingVector.shape[0]):
+            trainingV = trainingVector.getrow(i).toarray()
+            testingV = testingVector.getrow(i).toarray
+            d = self.euclidianDistance(trainingV, testingV)
+            if d < bestDistance:
+                bestDistance = d
+                bestPostIdx = i
+        print "best d: {0} : {1}".format(bestDistance,training_data.data[bestPostIdxt])
+
+
+
+    def euclidianDistance(self, V1,V2, normalized=False):
+        if normalized:
+            V1 = V1/ sp.linalg.norm(V1)
+            V2 = V2/ sp.linalg.norm(V2)
+        pdb.set_trace()
+        delta = V1-V2
+        return sp.linalg.norm(delta)
+        
+if __name__ == "__main__":
+    NewsGroups().main()
+
+
