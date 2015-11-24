@@ -18,7 +18,7 @@ training_data = sklearn.datasets.fetch_20newsgroups(subset="train", categories=g
 
 testing_data = sklearn.datasets.fetch_20newsgroups(subset="test", categories=groups)
 
-all_data = sklearn.datasets.fetch_20newsgroups(subset="all", categories=groups)
+#all_data = sklearn.datasets.fetch_20newsgroups(subset="all", categories=groups)
 
 
 class StemmedTfidfVectorizer(TfidfVectorizer):
@@ -26,8 +26,9 @@ class StemmedTfidfVectorizer(TfidfVectorizer):
         analyzer = super(StemmedTfidfVectorizer, self).build_analyzer()
         return lambda doc: (main.ch03.clustering.english_stemmer.stem(w) for w in analyzer(doc))
 
+
 vectorizer = StemmedTfidfVectorizer(min_df=1, stop_words="english", decode_error='ignore')
-vectorizer = CountVectorizer(min_df=1)
+#vectorizer = CountVectorizer(min_df=1)
 
 
 class NewsGroups():
@@ -37,70 +38,89 @@ class NewsGroups():
 
     def searchNearestPost(self, vectorizer, methodName, normalized=True):
         trainingVector = vectorizer.fit_transform(training_data.data)
-        testingVector = vectorizer.transform([testing_data.data[searchIdx]])
+        testingVector = vectorizer.transform(testing_data.data)
 
-        print "Testing data : {0}".format(testing_data.data[searchIdx])
         voc = vectorizer.vocabulary_
-
-        
-
         vocArrayWords = np.array(voc.keys(), dtype='U20')
         vocArrayIdx = np.array(voc.values())
 
+      
 
-
-        testVectorArray = testingVector.getrow(0).toarray().T[:, 0]
-
-        nonZerostest = np.nonzero(testVectorArray)
-
-        nonZeroList = nonZerostest[0].tolist()
-        pdb.set_trace()
-
-
-        print nonZeroList
-
-        self.findInTrainingVocabulary(voc,nonZeroList )
-
-
-
-        # let is iterate on all training Vectors and compute the distance with one test post:
         bestDistance = 100
         bestPostIdx = -1
 
-        testingV = testingVector.getrow(searchIdx).toarray()
-
         result = {}
-        for i in range(trainingVector.shape[0]):
-            trainingV = trainingVector.getrow(i).toarray()
 
-        d = self.euclidianDistance(trainingV, testingV)
-        result[i] = d
+        print "Testing Post : {0} - Training Post {1}".format(testingVector.shape[0],trainingVector.shape[0] )
+        totalTestingPost = testingVector.shape[0]
+       
 
-        if d < bestDistance:
-            bestDistance = d
-        bestPostIdx = i
+        for i in range(0,30):
+            print " still to go : {0} / {1}".format( i ,testingVector.shape[0] )
+            for j in range(trainingVector.shape[0]):
 
-        print "for post : {0} : \n" \
-              "--------------------------------------" \
-              "best d: {1} \n" \
-              "------------------------------------------: {2} - {3}".format(testing_data.data[140], bestDistance,
-                                                                             bestPostIdx,
-                                                                             training_data.data[bestPostIdx]
-                                                                             )
 
+                testingV = testingVector.getrow(i).toarray()
+                trainingV = trainingVector.getrow(j).toarray()
+
+                d = self.euclidianDistance(trainingV, testingV,True)
+                result[i] = d
+
+                if d < bestDistance:
+                    bestDistance = d
+                    bestTestingIdx, bestTrainingIdx = i,j
+                    bestTestingVector,bestTrainingVector = testingV, trainingV
+           
+        testingKeyWords = self.findWordsOnVector(bestTestingVector, vocArrayWords,vocArrayIdx)
+        trainingKeyWords = self.findWordsOnVector(bestTrainingVector, vocArrayWords,vocArrayIdx)
+
+        print "Best distance : {0}".format(bestDistance)
+
+        textToPrint =[testing_data.data[bestTestingIdx],training_data.data[bestTrainingIdx],testingKeyWords,trainingKeyWords]
+
+     
+        self.saveToFile(textToPrint)
+
+    def findWordsOnVector(self,vector, vocArrayWords,vocArrayIdx):
+
+        nonZeroIdx = np.nonzero(vector)[1]
+        listWords=[]
+
+        for idx in nonZeroIdx.tolist():
+            idxVoc = np.where(vocArrayIdx==idx)[0]
+            word = vocArrayWords[idxVoc][0]
+            
+            listWords.append(word)
+
+        return listWords
+                                                                           
     def euclidianDistance(self, V1, V2, normalized=False):
         if normalized:
             V1 = V1 / sp.linalg.norm(V1)
             V2 = V2 / sp.linalg.norm(V2)
-        # pdb.set_trace()
         delta = V1 - V2
         return sp.linalg.norm(delta)
 
-    def findInTrainingVocabulary(self,vocabulary, listWordsIdx):
-        for k,v in vocabulary.iteritems():
+    def findInTrainingVocabulary(self, vocabulary, listWordsIdx):
+        listWords=[]
+        for k, v in vocabulary.iteritems():
             for foundWord in listWordsIdx:
                 if foundWord == v:
-                    print "key : {0} for idx {1}".format(k,v)
+                    print "key : {0} for idx {1}".format(k, v)
+                    listWords.append(k)
+        return listWords
+
+
+
+    def saveToFile(self,textToPrint):
+        text_file = open("Output.txt", "w")
+        text_file.write("Testing Post: %s" % textToPrint[0])
+        text_file.write("\n---------------------------------------------------------------\n")
+        text_file.write("Testing Post KeyWords: %s" % textToPrint[2])
+        text_file.write("\n---------------------------------------------------------------\n")
+        text_file.write("Training Post: %s" % textToPrint[1])
+        text_file.write("Training Post KeyWords: %s" % textToPrint[3])
+        text_file.close() 
 
 if __name__ == "__main__":
     NewsGroups().main()
