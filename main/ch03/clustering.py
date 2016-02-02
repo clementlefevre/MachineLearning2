@@ -24,7 +24,7 @@ class Clustering():
         content = ["How to format my hard disk", " Hard disk format problems"]
         X = vectorizer.fit_transform(content)
         features = vectorizer.get_feature_names()
-        print features
+        print (features)
         print (X.toarray().transpose())
 
     def analyze_posts(self):
@@ -33,12 +33,12 @@ class Clustering():
         vectorizerCountStopWords = CountVectorizer(min_df=1, stop_words="english")
         # self.searchNearestPost(vectorizerCount, "CountVectorizer", False)
         self.searchNearestPost(vectorizerCount, "CountVectorizer", True)
-        print '--------------------------------------------------------------------------------'
+        print ('--------------------------------------------------------------------------------')
         self.searchNearestPost(vectorizerCountStopWords, "vectorizerCountStopWords", True)
-        print '--------------------------------------------------------------------------------'
+        print ('--------------------------------------------------------------------------------')
         vectorizerStemmed = self.createStemmedVectorizer()
         self.searchNearestPost(vectorizerStemmed,"StemmCountVectorizer", True)
-        print '--------------------------------------------------------------------------------'
+        print ('--------------------------------------------------------------------------------')
         vectorizedTfidf = self.createTfidfVectorizer()
         self.searchNearestPost(vectorizedTfidf,"vectorizedTfidf", True)
 
@@ -74,8 +74,8 @@ class Clustering():
             if distance<best_distance:
                 best_distance = distance
                 bestPostIdx= i
-            print "d:{1:8.2f} : {0} - ".format(posts[i],distance)
-        print "With method {1} {2} -> Closest Post : {0}".format(posts[bestPostIdx],vectorizedMethod, normalized)
+            print ("d:{1:8.2f} : {0} - ".format(posts[i],distance))
+        print ("With method {1} {2} -> Closest Post : {0}".format(posts[bestPostIdx],vectorizedMethod, normalized))
 
 class StemmedCountVectorizer(CountVectorizer):
     def build_analyzer(self):
