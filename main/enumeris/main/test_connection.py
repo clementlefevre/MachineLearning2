@@ -1,3 +1,5 @@
+from main.enumeris.main.config import DB_URL
+
 __author__ = 'ThinkPad'
 
 from . import db
@@ -38,7 +40,7 @@ class Count(db.Model):
 def loadSession():
     """"""
 
-    engine = db.create_engine('postgresql://postgres:clement2014@localhost:5432/DWE_MAUSFRERES_2012')
+    engine = db.create_engine(DB_URL)
 
     Session = db.sessionmaker(bind=engine)
     session = Session()
