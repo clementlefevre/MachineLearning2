@@ -4,6 +4,8 @@ __author__ = 'ThinkPad'
 
 from . import db
 
+SQL_QUERY = "SELECT S.idbldsite,S.sname, xyz.totalin, xyz.dato, M.tempmaxcelsius FROM dwe_bld_site S LEFT JOIN dwe_bld_address A ON A.idbldsite=S.idbldsite LEFT JOIN dwe_ext_weather_premium M ON M.idbldaddress=A.id LEFT JOIN ( SELECT idbldsite, to_char(dwe_cnt_site.timestamp, 'YYYY-MM-DD') as dato, sum(optimizedin) as totalin FROM dwe_cnt_site WHERE dwe_cnt_site.timestamp>'2016-01-01' and dwe_cnt_site.timestamp<'2016-02-04' and idbldsite=1 GROUP by dato, idbldsite ) AS xyz ON xyz.idbldsite = S.idbldsite where xyz.idbldsite = 1 and to_char(M.day, 'YYYY-MM-DD') = xyz.dato ORDER BY dato "
+
 
 class Site(db.Model):
     __tablename__ = 'dwe_bld_site'
@@ -54,5 +56,13 @@ def main():
     # allWeather = session.query(Weather).all()
     site1 = session.query(Site).filter_by(idbldsite=1).all()[0]
     allCount = session.query(Count).filter_by(idbldsite=1).filter_by(timestamp='2015-02-01').all()
+
+    sql = db.text(SQL_QUERY)
+    result = session.execute(sql)
+    names = []
+    for row in result:
+        names.append(row)
+
+    print names
 
     print "over"
