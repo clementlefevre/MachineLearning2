@@ -1,50 +1,71 @@
+from datetime import datetime
+
+import numpy as np
+
 from main.enumeris.main.config import DB_URL
 
 __author__ = 'ThinkPad'
 
-from . import db
+from sqlalchemy import create_engine, text, Column, Integer, ForeignKey, DATETIME, DATE, String
 
-SQL_QUERY = "SELECT S.idbldsite,S.sname, xyz.totalin, xyz.dato," \
-            " M.tempmaxcelsius FROM dwe_bld_site S " \
-            "LEFT JOIN dwe_bld_address A " \
-            "ON A.idbldsite=S.idbldsite " \
-            "LEFT JOIN dwe_ext_weather_premium M ON M.idbldaddress=A.id" \
-            " LEFT JOIN ( " \
-            "SELECT idbldsite, to_char(dwe_cnt_site.timestamp, 'YYYY-MM-DD') as dato, sum(optimizedin) as totalin" \
-            " FROM dwe_cnt_site WHERE dwe_cnt_site.timestamp>:start_date and dwe_cnt_site.timestamp<:end_date and idbldsite=1" \
-            " GROUP by dato, idbldsite ) AS xyz" \
-            " ON xyz.idbldsite = S.idbldsite where xyz.idbldsite = :site_id and to_char(M.day, 'YYYY-MM-DD') = xyz.dato " \
-            "ORDER BY dato "
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
+
+Base = declarative_base()
+
+SQL_QUERY_PER_SITE = "SELECT S.idbldsite,S.sname, xyz.totalin, xyz.dato," \
+                     " M.tempmaxcelsius, M.tempmincelsius FROM dwe_bld_site S " \
+                     "LEFT JOIN dwe_bld_address A " \
+                     "ON A.idbldsite=S.idbldsite " \
+                     "LEFT JOIN dwe_ext_weather_premium M ON M.idbldaddress=A.id" \
+                     " LEFT JOIN ( " \
+                     "SELECT idbldsite, to_char(dwe_cnt_site.timestamp, 'YYYY-MM-DD') as dato, sum(optimizedin) as totalin" \
+                     " FROM dwe_cnt_site WHERE dwe_cnt_site.timestamp>:start_date and dwe_cnt_site.timestamp<:end_date and idbldsite= :site_id" \
+                     " GROUP by dato, idbldsite ) AS xyz" \
+                     " ON xyz.idbldsite = S.idbldsite where xyz.idbldsite = :site_id and to_char(M.day, 'YYYY-MM-DD') = xyz.dato " \
+                     "ORDER BY dato "
+
+SQL_QUERY_ALL_SITES = "SELECT S.idbldsite,S.sname, xyz.totalin, xyz.dato," \
+                      " M.tempmaxcelsius, M.tempmincelsius FROM dwe_bld_site S " \
+                      "LEFT JOIN dwe_bld_address A " \
+                      "ON A.idbldsite=S.idbldsite " \
+                      "LEFT JOIN dwe_ext_weather_premium M ON M.idbldaddress=A.id" \
+                      " LEFT JOIN ( " \
+                      "SELECT idbldsite, to_char(dwe_cnt_site.timestamp, 'YYYY-MM-DD') as dato, sum(optimizedin) as totalin" \
+                      " FROM dwe_cnt_site WHERE dwe_cnt_site.timestamp>:start_date and dwe_cnt_site.timestamp<:end_date " \
+                      " GROUP by dato, idbldsite ) AS xyz" \
+                      " ON xyz.idbldsite = S.idbldsite where   to_char(M.day, 'YYYY-MM-DD') = xyz.dato " \
+                      "ORDER BY dato "
 
 
-class Site(db.Model):
+class Site(Base):
     __tablename__ = 'dwe_bld_site'
-    idbldsite = db.Column(db.Integer, primary_key=True)
-    sname = db.Column(db.String)
-    address = db.relationship('Address', backref='dwe_bld_site')
-    count = db.relationship('Count', backref='dwe_bld_site')
+    idbldsite = Column(Integer, primary_key=True)
+    sname = Column(String)
+    address = relationship('Address', backref='dwe_bld_site')
+    count = relationship('Count', backref='dwe_bld_site')
 
 
-class Address(db.Model):
+class Address(Base):
     __tablename__ = 'dwe_bld_address'
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
-    idbldsite = db.Column(db.Integer, db.ForeignKey('dwe_bld_site.idbldsite'))
-    weather = db.relationship('Weather')
+    idbldsite = Column(Integer, ForeignKey('dwe_bld_site.idbldsite'))
+    weather = relationship('Weather')
 
 
-class Weather(db.Model):
+class Weather(Base):
     __tablename__ = "dwe_ext_weather_premium"
-    id = db.Column(db.Integer, primary_key=True)
-    day = db.Column(db.DATE)
-    idbldaddress = db.Column(db.Integer, db.ForeignKey('dwe_bld_address.id'))
+    id = Column(Integer, primary_key=True)
+    day = Column(DATE)
+    idbldaddress = Column(Integer, ForeignKey('dwe_bld_address.id'))
 
 
-class Count(db.Model):
+class Count(Base):
     __tablename__ = "dwe_cnt_site"
-    id = db.Column(db.Integer, primary_key=True)
-    idbldsite = db.Column(db.Integer, db.ForeignKey('dwe_bld_site.idbldsite'))
-    timestamp = db.Column(db.DATETIME)
+    id = Column(Integer, primary_key=True)
+    idbldsite = Column(Integer, ForeignKey('dwe_bld_site.idbldsite'))
+    timestamp = Column(DATETIME)
 
 
 # ----------------------------------------------------------------------
@@ -52,27 +73,52 @@ class Count(db.Model):
 def loadSession():
     """"""
 
-    engine = db.create_engine(DB_URL)
+    engine = create_engine(DB_URL)
 
-    Session = db.sessionmaker(bind=engine)
+    Session = sessionmaker(bind=engine)
     session = Session()
     return session
 
 
 def main():
     session = loadSession()
-    allAddresses = session.query(Address).all()
     allSites = session.query(Site).all()
-    # allWeather = session.query(Weather).all()
     site1 = session.query(Site).filter_by(idbldsite=1).all()[0]
-    allCount = session.query(Count).filter_by(idbldsite=1).filter_by(timestamp='2015-02-01').all()
 
-    sql = db.text(SQL_QUERY)
-    result = session.execute(sql, {'start_date': '2015-01-01', 'end_date': '2015-02-01', 'site_id': 1})
-    names = []
+    sql = text(SQL_QUERY_PER_SITE)
+
+    result = session.execute(sql, {'start_date': '2012-01-01', 'end_date': '2016-02-01', 'site_id': 1})
+    data = []
+
     for row in result:
-        names.append(row)
+        data.append([int(row[2]), (int(row[4]) + int(row[5]) / 2), getMonth(row[3]), getDay(row[3])])
+    np_array = np.array(data)
+    print data
 
-    print names
+    np_array = np_array[(np_array[:, 3] == 3)]
+    import matplotlib.pyplot as plt
+    y = np_array[:, 0]
+    x = np_array[:, 1]
+
+    plt.figure(num=None, figsize=(8, 6))
+    plt.clf()
+    fig, ax = plt.subplots()
+
+    plt.xlim(np.min(x), np.max(x))
+    plt.ylim(np.min(y), np.max(y))
+
+    plt.scatter(x, y, s=4, color='r', marker='s')
+
+    fig.savefig('Figure' + '.png')
 
     print "over"
+
+
+def getMonth(date_posted):
+    date = datetime.strptime(date_posted, '%Y-%m-%d')
+    return date.month
+
+
+def getDay(date_posted):
+    date = datetime.strptime(date_posted, '%Y-%m-%d')
+    return date.day
