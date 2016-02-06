@@ -20,6 +20,8 @@ from sqlalchemy.orm import relationship, sessionmaker
 Base = declarative_base()
 
 SEASONS = {1: 'winter', 2: 'spring', 3: 'summer', 4: 'autumn'}
+PARAMS = {'site_id': 0, 'site_name': 1, 'totalIn': 2, 'min_temp': 3, 'max_temp': 4, 'mean_temp': 5,
+          'precipitations_mm': 6, 'month': 7, 'season': 8, 'day': 9}
 
 CHART_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), "charts")
@@ -67,11 +69,6 @@ def loadSession():
 def main():
     session = loadSession()
     allSites = session.query(Site).all()
-    site1 = session.query(Site).filter_by(idbldsite=1).all()[0]
-
-
-
-    # allSites = [site1]
     analyzeAllSite(session, allSites)
 
 
@@ -89,9 +86,11 @@ def analyzeAllSite(session, allSites):
     for season in range(1, 5):
         for day in range(1, 8):
             filterOnSeasonDay = filterDataOnSeasonDay(np_array, season, day)
-            x, y = normalize(filterOnSeasonDay)
+            x1, x2, y = normalize(filterOnSeasonDay)
 
-            plotFigure(x, y, season, day, "All Sites")
+            plotFigure(x1, y, season, day, "All Sites", 'Mean Temp Celsius')
+            plotFigure(x2, y, season, day, "All Sites", 'Precipitations mm')
+
             # plot3DFigure(x, y, z, season, day, "All Sites")
 
 
@@ -99,52 +98,57 @@ def retrieveData(session, site_id):
     sql = text(SQL_QUERY_PER_SITE)
     result = session.execute(sql, {'start_date': '2013-01-01', 'end_date': '2016-02-01', 'site_id': site_id})
 
-    # sql = text(SQL_QUERY_ALL_SITES)
-    # result = session.execute(sql, {'start_date': '2015-12-01', 'end_date': '2016-02-01'})
     return result
 
 
 def convertData(row):
-    # return a list of totalIn(0), min temp(1), max temp(2), avg temp(3), month(4), season(5), day(6), site_id(7)
+    # return a list of site_id(1)totalIn(0), min temp(1), max temp(2), avg temp(3), month(4), season(5), day(6),
     site_id = int(row[0])
     site_name = row[1]
     totalIn = int(row[2])
     min_temp = int(row[5])
     max_temp = int(row[4])
+    precipitations_mm = row[6]
     mean_temp = (np.mean([min_temp, max_temp]))
     month = getMonth(row[3])
     day = getDay(row[3])
     season = getSeason(month)
-    return [totalIn, min_temp, max_temp, mean_temp, month, season, day, site_id]
+    return [site_id, site_name, totalIn, min_temp, max_temp, mean_temp, precipitations_mm, month, season, day]
 
 
 def filterDataOnSeasonDay(np_array, season, day=None):
     # this function filter on a given day and a given season, and return the totalIn and meanTemp
 
     if day is not None:
-        filtered_array = np_array[(np_array[:, 5] == season) & (np_array[:, 6] == day)]
+        filtered_array = np_array[
+            (np_array[:, PARAMS.get('season')] == season) & (np_array[:, PARAMS.get('day')] == day)]
     else:
-        filtered_array = np_array[(np_array[:, 5] == season)]
+        filtered_array = np_array[(np_array[:, PARAMS.get('season')] == season)]
 
     return filtered_array
 
 
 def normalize(np_array):
-    normalized_array = np.empty([1, 8])
-    sites = np.unique(np_array[:, 7]).tolist()
+    normalized_array = np.empty([1, 10])
+    site_idx = PARAMS.get('site_id')
+    total_in_idx = PARAMS.get('totalIn')
+
+    sites = np.unique(np_array[:, PARAMS.get('site_id')]).tolist()
 
     for site in sites:
-        site_array = np_array[np_array[:, 7] == site]
-        mean_id = np.mean(site_array[:, 0])
-        std_id = np.std(site_array[:, 0])
+        site_array = np_array[np_array[:, site_idx] == site]
+        mean_id = np.mean(site_array[:, total_in_idx])
+        std_id = np.std(site_array[:, total_in_idx])
         if mean_id * std_id > 0:
-            site_array[:, 0] = (site_array[:, 0] - mean_id) / std_id
+            site_array[:, total_in_idx] = (site_array[:, total_in_idx] - mean_id) / std_id
             normalized_array = np.concatenate([normalized_array, site_array])
     normalized_array = np.delete(normalized_array, 0, 0)
-    return normalized_array[:, 3], normalized_array[:, 0]
+    return normalized_array[:, PARAMS.get('mean_temp')], normalized_array[:,
+                                                         PARAMS.get('precipitations_mm')], normalized_array[:,
+                                                                                           total_in_idx]
 
 
-def plotFigure(x, y, season, day, siteName):
+def plotFigure(x, y, season, day, siteName, parameter):
     plt.figure(num=None, figsize=(8, 6))
     plt.clf()
     fig, ax = plt.subplots()
@@ -152,10 +156,10 @@ def plotFigure(x, y, season, day, siteName):
     plt.ylim(np.min(y), np.max(y))
     plt.scatter(x, y, s=4, color='r', marker='s')
     plt.title('{0} - {1} - {2}.png'.format(siteName, SEASONS.get(season), calendar.day_name[day - 1]))
-    plt.xlabel("Average Temperation (Celsius)")
+    plt.xlabel(parameter)
     plt.ylabel("Optimized In")
     # pdb.set_trace()
-    fname = '{0} - {1} - {2}.png'.format(siteName, SEASONS.get(season), calendar.day_name[day - 1])
+    fname = '{0} - {1} - {2} - {3}.png'.format(siteName, SEASONS.get(season), calendar.day_name[day - 1], parameter)
     fig.savefig(os.path.join(CHART_DIR, fname))
 
 

@@ -1,7 +1,7 @@
 __author__ = 'ThinkPad'
 
 SQL_QUERY_PER_SITE = "SELECT S.idbldsite,S.sname, xyz.totalin, xyz.dato," \
-                     " M.tempmaxcelsius, M.tempmincelsius FROM dwe_bld_site S " \
+                     " M.tempmaxcelsius, M.tempmincelsius,M.precipitationinmilimiter FROM dwe_bld_site S " \
                      "LEFT JOIN dwe_bld_address A " \
                      "ON A.idbldsite=S.idbldsite " \
                      "LEFT JOIN dwe_ext_weather_premium M ON M.idbldaddress=A.id" \
@@ -13,7 +13,7 @@ SQL_QUERY_PER_SITE = "SELECT S.idbldsite,S.sname, xyz.totalin, xyz.dato," \
                      "ORDER BY dato "
 
 SQL_QUERY_ALL_SITES = "SELECT S.idbldsite,S.sname, xyz.totalin, xyz.dato," \
-                      " M.tempmaxcelsius, M.tempmincelsius FROM dwe_bld_site S " \
+                      " M.tempmaxcelsius, M.tempmincelsius,M.precipitationinmilimiter FROM dwe_bld_site S " \
                       "LEFT JOIN dwe_bld_address A " \
                       "ON A.idbldsite=S.idbldsite " \
                       "LEFT JOIN dwe_ext_weather_premium M ON M.idbldaddress=A.id" \
