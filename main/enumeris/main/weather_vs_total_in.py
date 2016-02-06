@@ -111,7 +111,7 @@ def convertData(row):
     totalIn = int(row[2])
     min_temp = int(row[5])
     max_temp = int(row[4])
-    mean_temp = int(np.mean([min_temp, max_temp]))
+    mean_temp = (np.mean([min_temp, max_temp]))
     month = getMonth(row[3])
     day = getDay(row[3])
     season = getSeason(month)
@@ -130,13 +130,8 @@ def filterDataOnSeasonDay(np_array, season, day=None):
 
 
 def normalize(np_array):
+    normalized_array = np.empty([1, 8])
     sites = np.unique(np_array[:, 7]).tolist()
-    del sites[0]
-
-    normalized_array = np_array[np_array[:, 7] == 1]
-    mean_id = np.mean(normalized_array[:, 0])
-    std_id = np.std(normalized_array[:, 0])
-    normalized_array[:, 0] = (normalized_array[:, 0] - mean_id) / std_id
 
     for site in sites:
         site_array = np_array[np_array[:, 7] == site]
@@ -145,7 +140,7 @@ def normalize(np_array):
         if mean_id * std_id > 0:
             site_array[:, 0] = (site_array[:, 0] - mean_id) / std_id
             normalized_array = np.concatenate([normalized_array, site_array])
-
+    normalized_array = np.delete(normalized_array, 0, 0)
     return normalized_array[:, 3], normalized_array[:, 0]
 
 
