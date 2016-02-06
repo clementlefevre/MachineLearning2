@@ -1,7 +1,7 @@
-from enumeris.main import test_connection
+from enumeris.main import weather_vs_total_in
 
 __author__ = 'ThinkPad'
 
 print("Start test")
-test_connection.main()
+weather_vs_total_in.main()
 print "End Test"
