@@ -1,4 +1,4 @@
-from main.enumeris.main import test_connection
+from enumeris.main import test_connection
 
 __author__ = 'ThinkPad'
 
