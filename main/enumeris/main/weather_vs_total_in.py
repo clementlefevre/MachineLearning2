@@ -131,13 +131,22 @@ def filterDataOnSeasonDay(np_array, season, day=None):
 
 def normalize(np_array):
     sites = np.unique(np_array[:, 7]).tolist()
+    del sites[0]
+
+    normalized_array = np_array[np_array[:, 7] == 1]
+    mean_id = np.mean(normalized_array[:, 0])
+    std_id = np.std(normalized_array[:, 0])
+    normalized_array[:, 0] = (normalized_array[:, 0] - mean_id) / std_id
 
     for site in sites:
         site_array = np_array[np_array[:, 7] == site]
-        mean_site_in = int(site_array[:, 0].mean())
-        np_array = np_array[(site_array[:, 0] > mean_site_in)]
+        mean_id = np.mean(site_array[:, 0])
+        std_id = np.std(site_array[:, 0])
+        if mean_id * std_id > 0:
+            site_array[:, 0] = (site_array[:, 0] - mean_id) / std_id
+            normalized_array = np.concatenate([normalized_array, site_array])
 
-    return np_array[:, 3], np_array[:, 0]
+    return normalized_array[:, 3], normalized_array[:, 0]
 
 
 def plotFigure(x, y, season, day, siteName):
@@ -145,7 +154,7 @@ def plotFigure(x, y, season, day, siteName):
     plt.clf()
     fig, ax = plt.subplots()
     plt.xlim(np.min(x), np.max(x))
-    plt.ylim(0, np.max(y))
+    plt.ylim(np.min(y), np.max(y))
     plt.scatter(x, y, s=4, color='r', marker='s')
     plt.title('{0} - {1} - {2}.png'.format(siteName, SEASONS.get(season), calendar.day_name[day - 1]))
     plt.xlabel("Average Temperation (Celsius)")
@@ -187,5 +196,3 @@ def getSeason(month):
 def getDay(date_posted):
     date = datetime.strptime(date_posted, '%Y-%m-%d')
     return date.day
-
-
