@@ -1,14 +1,13 @@
 import calendar
 from datetime import datetime
-import os
 
+import os
 import numpy as np
 import matplotlib.pyplot as plt
-
 from mpl_toolkits.mplot3d import Axes3D
-
 from config import DB_URL
 from main.enumeris.main.utils.settings import SQL_QUERY_PER_SITE
+import pandas as pd
 
 __author__ = 'ThinkPad'
 
@@ -130,6 +129,7 @@ def filterDataOnSeasonDay(np_array, season, day=None):
 
 def normalize(np_array):
     normalized_array = np.empty([1, 10])
+    # normalize_pandas(np_array)
     site_idx = PARAMS.get('site_id')
     total_in_idx = PARAMS.get('totalIn')
 
@@ -146,6 +146,18 @@ def normalize(np_array):
     return normalized_array[:, PARAMS.get('mean_temp')], normalized_array[:,
                                                          PARAMS.get('precipitations_mm')], normalized_array[:,
                                                                                            total_in_idx]
+
+
+def normalize_pandas(np_array):
+    df = pd.DataFrame({'ID': np_array[:, PARAMS.get('site_id')],
+                       'value': np_array[:, PARAMS.get('totalIn')]})
+
+    byid = df.groupby('ID')
+    mean = byid.mean()
+    std = byid.std()
+
+    df['normalized'] = df.apply(lambda x: (x.value - mean.ix[x.ID]) / std.ix[x.ID], axis=1)
+    print(df)
 
 
 def plotFigure(x, y, season, day, siteName, parameter):
