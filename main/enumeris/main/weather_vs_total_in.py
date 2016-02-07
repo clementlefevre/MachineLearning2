@@ -129,7 +129,7 @@ def filterDataOnSeasonDay(np_array, season, day=None):
 
 def normalize(np_array):
     normalized_array = np.empty([1, 10])
-    # normalize_pandas(np_array)
+    normalize_pandas(np_array)
     site_idx = PARAMS.get('site_id')
     total_in_idx = PARAMS.get('totalIn')
 
@@ -149,8 +149,8 @@ def normalize(np_array):
 
 
 def normalize_pandas(np_array):
-    df = pd.DataFrame({'ID': np_array[:, PARAMS.get('site_id')],
-                       'value': np_array[:, PARAMS.get('totalIn')]})
+    df = pd.DataFrame({'ID': np_array[:, PARAMS.get('site_id')].astype(np.int64),
+                       'value': np_array[:, PARAMS.get('totalIn')].astype(np.int64)})
 
     byid = df.groupby('ID')
     mean = byid.mean()
