@@ -1,4 +1,4 @@
-from enumeris.main import grinder
+from test.main import grinder
 
 __author__ = 'ThinkPad'
 
