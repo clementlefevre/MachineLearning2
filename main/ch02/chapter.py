@@ -94,7 +94,7 @@ def is_virginica_test(fi, t, reverse, example):
     return test
 
 
-from main.ch02.utils import getModel, predict
+from utils import getModel, predict
 
 # ning accuracy was 96.0%.
 # ing accuracy was 90.0% (N = 50).
