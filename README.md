@@ -1,3 +1,3 @@
-# MachineLearning2
-
-small project where i first implement SVM with Naive Bayens on a list of post from a famous french online newspaper (rue89), and create a prediction model to classify the political opinion of the commentator.
+# MachineLearning
+a partial fork of a very good guide "Building Machine Learning systems with Python" Willi Richert (Author), Luis Pedro Coelho (Author)
+On top of that a brief implementation of linear regression of myself.
