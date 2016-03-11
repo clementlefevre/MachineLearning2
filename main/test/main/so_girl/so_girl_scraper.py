@@ -1,6 +1,7 @@
 import urllib2
 
 import mechanize as mechanize
+import os
 
 __author__ = 'ramon'
 
@@ -11,6 +12,9 @@ URL_ROOT = "http://stackoverflow.com/users?page="
 # NUM_PAGES = 138413
 NUM_PAGES = 2
 
+PIC_FOLDER = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), "pic_so")
+
 browser = mechanize.Browser()
 
 
@@ -18,7 +22,7 @@ class SO_scraper():
     def retrieve_all_pics(self):
         driver = webdriver.Firefox()
 
-        for page in range(NUM_PAGES):
+        for page in range(100):
             self.get_profile_pic(driver, page)
 
     def get_profile_pic(self, driver, page):
@@ -39,32 +43,29 @@ class SO_scraper():
             # pdb.set_trace()
 
     def save_pic(self, id, name, img_url):
-        hdr = {
-            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36'
-
-            ,
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
-            'Accept-Encoding': 'none',
-            'Accept-Language': 'en-US,en;q=0.8',
-            'Connection': 'keep-alive'}
+        img_url512 = img_url.replace("s=48", "s=512")
 
         if "imgur" not in img_url:
             info = ""
             req = urllib2.Request(
-                img_url, headers=hdr)
+                img_url512)
 
             try:
                 page = urllib2.urlopen(req)
                 info = page.info()['Content-Type']
-                print info
+
             except urllib2.HTTPError, e:
                 print e.fp.read()
 
-            content = page.read()
-            f = open(id + "_" + name + "." + info.split("/")[1], 'w')
-            f.write(content)
-            f.close()
+            if "jpeg" in info:
+                self.save_profil_pic(id, info, name, page)
+
+    def save_profil_pic(self, id, info, name, page):
+        content = page.read()
+        f_name = id + "_" + name + "." + info.split("/")[1]
+        f = open(os.path.join(PIC_FOLDER, f_name), 'w')
+        f.write(content)
+        f.close()
 
 
 if __name__ == '__main__':
