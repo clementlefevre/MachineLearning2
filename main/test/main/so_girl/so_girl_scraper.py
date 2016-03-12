@@ -22,7 +22,7 @@ class SO_scraper():
     def retrieve_all_pics(self):
         driver = webdriver.Firefox()
 
-        for page in range(100):
+        for page in range(100, 100000):
             self.get_profile_pic(driver, page)
 
     def get_profile_pic(self, driver, page):
