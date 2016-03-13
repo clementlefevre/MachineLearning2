@@ -13,7 +13,7 @@ URL_ROOT = "http://stackoverflow.com/users?page="
 NUM_PAGES = 2
 
 PIC_FOLDER = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), "pic_so")
+    os.path.dirname(os.path.realpath(__file__)), "so_pics")
 
 browser = mechanize.Browser()
 
@@ -22,7 +22,7 @@ class SO_scraper():
     def retrieve_all_pics(self):
         driver = webdriver.Firefox()
 
-        for page in range(100, 100000):
+        for page in range(1235, 100000):
             self.get_profile_pic(driver, page)
 
     def get_profile_pic(self, driver, page):
