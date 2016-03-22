@@ -242,7 +242,6 @@ def eingenfaces():
     y = np.hstack([Ym, Yf])
 
     n_features = X.shape[1]
-
     h, w = 256, 256
 
     # the label to predict is the id of the person
