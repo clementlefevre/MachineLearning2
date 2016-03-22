@@ -95,7 +95,7 @@ def read_images(sz=None):
     labels = read_labels()
 
     for dirname, dirnames, filenames in os.walk(FACE_TRAINING_IMAGE_FOLDER):
-        dirList = dirnames[:20]
+        dirList = dirnames
         pbar = ProgressBar(maxval=len(dirList) or None).start()
         for subdirname in dirList:
             subject_path = os.path.join(dirname, subdirname)
@@ -173,7 +173,7 @@ if __name__ == "__main__":
     # Define the Fisherfaces as Feature Extraction method:
     feature = Fisherfaces()
     # Define a 1-NN classifier with Euclidean Distance:
-    classifier = NearestNeighbor(dist_metric=EuclideanDistance(), k=5)
+    classifier = NearestNeighbor(dist_metric=EuclideanDistance(), k=3)
     # Define the model as the combination
     my_model = PredictableModel(feature=feature, classifier=classifier)
     # Compute the Fisherfaces on the given data (in X) and labels (in y):
